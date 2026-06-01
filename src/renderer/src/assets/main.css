@@ -169,3 +169,16 @@ code {
     display: none;
   }
 }
+
+.table-container {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.characters-table {
+  width: 100%;
+  border-collapse: collapse;
+}

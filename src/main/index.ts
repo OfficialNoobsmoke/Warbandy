@@ -1,7 +1,9 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
-import { join } from 'path'
+import fs from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import path, { join } from 'path'
+import { Character } from './character'
 
 function createWindow(): void {
   // Create the browser window.
@@ -62,6 +64,75 @@ app.whenReady().then(() => {
 
     return result.filePaths[0]
   })
+  ipcMain.handle('folder-exists', async (_, folderPath: string) => {
+    try {
+      const stats = await fs.promises.stat(folderPath)
+      return stats.isDirectory()
+    } catch {
+      return false
+    }
+  })
+  ipcMain.handle('read-file', async (_, filePath: string) => {
+    try {
+      const data = await fs.promises.readFile(filePath, 'utf8')
+      return data
+    } catch {
+      return null
+    }
+  })
+  ipcMain.handle('write-file', async (_, path: string, content: string) => {
+    await fs.promises.writeFile(path, content, 'utf8')
+    return true
+  })
+  ipcMain.handle('get-characters', async (_, wowPath: string) => {
+    return getCharacters(wowPath)
+  })
+
+  async function getCharacters(wowPath: string): Promise<Character[]> {
+    const characters: Character[] = []
+
+    const accountsPath = path.join(wowPath, 'WTF', 'Account')
+
+    const accountDirs = await fs.promises.readdir(accountsPath, { withFileTypes: true })
+
+    for (const accountDir of accountDirs) {
+      if (!accountDir.isDirectory()) {
+        continue
+      }
+
+      const accountName = accountDir.name
+
+      const accountPath = path.join(accountsPath, accountName)
+
+      const realmDirs = await fs.promises.readdir(accountPath, { withFileTypes: true })
+
+      for (const realmDir of realmDirs) {
+        if (!realmDir.isDirectory() || realmDir.name === 'SavedVariables') {
+          continue
+        }
+
+        const realmName = realmDir.name
+
+        const realmPath = path.join(accountPath, realmName)
+
+        const characterDirs = await fs.promises.readdir(realmPath, { withFileTypes: true })
+
+        for (const characterDir of characterDirs) {
+          if (!characterDir.isDirectory()) {
+            continue
+          }
+
+          characters.push({
+            account: accountName,
+            realm: realmName,
+            name: characterDir.name
+          })
+        }
+      }
+    }
+
+    return characters
+  }
 
   createWindow()
 
