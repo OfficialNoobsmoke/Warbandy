@@ -1,0 +1,2 @@
+# Enforce CRLF on checkout for text files
+* text=auto eol=crlf

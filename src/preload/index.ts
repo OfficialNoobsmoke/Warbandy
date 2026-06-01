@@ -22,5 +22,9 @@ if (process.contextIsolated) {
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  selectFolder: () => ipcRenderer.invoke('select-folder')
+  selectFolder: () => ipcRenderer.invoke('select-folder'),
+  folderExists: (path: string) => ipcRenderer.invoke('folder-exists', path),
+  readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
+  writeFile: (path: string, content: string) => ipcRenderer.invoke('write-file', path, content),
+  getCharacters: (wowPath: string) => ipcRenderer.invoke('get-characters', wowPath)
 })
