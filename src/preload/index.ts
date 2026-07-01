@@ -26,5 +26,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   folderExists: (path: string) => ipcRenderer.invoke('folder-exists', path),
   readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
   writeFile: (path: string, content: string) => ipcRenderer.invoke('write-file', path, content),
-  getCharacters: (wowPath: string) => ipcRenderer.invoke('get-characters', wowPath)
+  getCharacters: (wowPath: string) => ipcRenderer.invoke('get-characters', wowPath),
+  getAppPath: () => ipcRenderer.invoke('get-app-path')
 })

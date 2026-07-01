@@ -1,9 +1,14 @@
+import { getAppSettings, updateAppSettings } from '@renderer/domain/appSettings'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function ApplicationSettingsPage(): React.JSX.Element {
   const navigate = useNavigate()
-  const [folderPath, setFolderPath] = useState('')
+  const [WowFolderPath, setWowFolderPath] = useState(() => {
+    const { wowPath = '' } = getAppSettings()
+    return wowPath
+  })
+
   const handleSelectFolder = async (): Promise<void> => {
     const path = await window.electronAPI.selectFolder()
 
@@ -18,18 +23,27 @@ export default function ApplicationSettingsPage(): React.JSX.Element {
         alert('Selected folder does not have interface/addons folder.')
         return
       }
-      localStorage.setItem('wowPath', path)
-      setFolderPath(path)
+
+      updateAppSettings({ wowPath: path })
+      setWowFolderPath(path)
     }
   }
+
+  const saveApplicationSettings = (): void => {
+    const appPath = localStorage.getItem('appPath')
+    const appSettings = getAppSettings()
+    window.electronAPI.writeFile(appPath + '/settings.json', JSON.stringify(appSettings))
+  }
+
   return (
     <div>
       <h1>Application Settings</h1>
 
       <div>
         <button onClick={handleSelectFolder}>Select WoW Folder</button>
-        <div>{folderPath || 'No folder selected'}</div>
+        <div>{WowFolderPath || 'No folder selected'}</div>
       </div>
+      <button onClick={() => saveApplicationSettings()}>Save</button>
       <button onClick={() => navigate('/')}>Back</button>
     </div>
   )

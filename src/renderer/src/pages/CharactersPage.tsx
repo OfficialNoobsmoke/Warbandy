@@ -1,3 +1,4 @@
+import { getAppSettings } from '@renderer/domain/appSettings'
 import { Character } from '@renderer/domain/character'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -9,8 +10,7 @@ export default function CharactersPage(): React.JSX.Element {
   const [characters, setCharacters] = useState<Character[]>([])
 
   useEffect(() => {
-    const wowPath = localStorage.getItem('wowPath')
-
+    const { wowPath } = getAppSettings()
     if (!wowPath) return
 
     window.electronAPI.getCharacters(wowPath).then(setCharacters)

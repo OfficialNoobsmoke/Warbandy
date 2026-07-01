@@ -87,6 +87,9 @@ app.whenReady().then(() => {
   ipcMain.handle('get-characters', async (_, wowPath: string) => {
     return getCharacters(wowPath)
   })
+  ipcMain.handle('get-app-path', async () => {
+    return app.getAppPath()
+  })
 
   async function getCharacters(wowPath: string): Promise<Character[]> {
     const characters: Character[] = []

@@ -1,3 +1,4 @@
+import { getAppSettings } from '@renderer/domain/appSettings'
 import { GameSettings } from '@renderer/domain/gameSettings'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -27,7 +28,7 @@ export default function GameSettingsPage(): React.JSX.Element {
 
   function saveSettings(): void {
     if (!settings || !settingsFileContent) return
-    const wowPath = localStorage.getItem('wowPath')
+    const { wowPath } = getAppSettings()
     if (!wowPath) return
 
     setSettingsFileContent(
@@ -115,7 +116,7 @@ export default function GameSettingsPage(): React.JSX.Element {
           />
           Synchronize Macros
         </label>
-        <button onClick={() => saveSettings()}>Save Settings</button>
+        <button onClick={() => saveSettings()}>Save</button>
         <button onClick={() => navigate('/')}>Back</button>
       </div>
     </>
