@@ -1,3 +1,4 @@
+import { getAppSettings } from '@renderer/domain/appSettings'
 import { GameSettings } from '@renderer/domain/gameSettings'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -27,29 +28,25 @@ export default function GameSettingsPage(): React.JSX.Element {
 
   function saveSettings(): void {
     if (!settings || !settingsFileContent) return
-    const wowPath = localStorage.getItem('wowPath')
+
+    const { wowPath } = getAppSettings()
     if (!wowPath) return
 
-    setSettingsFileContent(
-      setSettingValue(settingsFileContent, 'synchronizeConfig', settings.synchronizeConfig || '0')
-    )
-    setSettingsFileContent(
-      setSettingValue(
-        settingsFileContent,
-        'synchronizeBindings',
-        settings.synchronizeBindings || '0'
-      )
-    )
-    setSettingsFileContent(
-      setSettingValue(settingsFileContent, 'synchronizeMacros', settings.synchronizeMacros || '0')
-    )
+    let content = settingsFileContent
 
-    window.electronAPI.writeFile(wowPath + '/WTF/Config.wtf', settingsFileContent)
+    content = setSettingValue(content, 'synchronizeConfig', settings.synchronizeConfig || '0')
+
+    content = setSettingValue(content, 'synchronizeBindings', settings.synchronizeBindings || '0')
+
+    content = setSettingValue(content, 'synchronizeMacros', settings.synchronizeMacros || '0')
+
+    setSettingsFileContent(content)
+    window.electronAPI.writeFile(wowPath + '/WTF/Config.wtf', content)
   }
 
   useEffect(() => {
     const loadSettings = async (): Promise<void> => {
-      const wowPath = localStorage.getItem('wowPath')
+      const { wowPath = '' } = getAppSettings()
       if (!wowPath) return
 
       const content = await window.electronAPI.readFile(wowPath + '/WTF/Config.wtf')
@@ -115,7 +112,7 @@ export default function GameSettingsPage(): React.JSX.Element {
           />
           Synchronize Macros
         </label>
-        <button onClick={() => saveSettings()}>Save Settings</button>
+        <button onClick={() => saveSettings()}>Save</button>
         <button onClick={() => navigate('/')}>Back</button>
       </div>
     </>

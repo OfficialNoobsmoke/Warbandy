@@ -84,8 +84,19 @@ app.whenReady().then(() => {
     await fs.promises.writeFile(path, content, 'utf8')
     return true
   })
+  ipcMain.handle('file-exists', async (_, filePath: string) => {
+    try {
+      const stats = await fs.promises.stat(filePath)
+      return stats.isFile()
+    } catch {
+      return false
+    }
+  })
   ipcMain.handle('get-characters', async (_, wowPath: string) => {
     return getCharacters(wowPath)
+  })
+  ipcMain.handle('get-app-path', async () => {
+    return app.getAppPath()
   })
 
   async function getCharacters(wowPath: string): Promise<Character[]> {
