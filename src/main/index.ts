@@ -1,6 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import fs from 'fs'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import path, { join } from 'path'
 import { Character } from './character'
@@ -30,7 +29,7 @@ function createWindow(): void {
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -42,15 +41,10 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  app.setAppUserModelId('com.electron')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
   ipcMain.handle('select-folder', async () => {
@@ -101,9 +95,7 @@ app.whenReady().then(() => {
 
   async function getCharacters(wowPath: string): Promise<Character[]> {
     const characters: Character[] = []
-
     const accountsPath = path.join(wowPath, 'WTF', 'Account')
-
     const accountDirs = await fs.promises.readdir(accountsPath, { withFileTypes: true })
 
     for (const accountDir of accountDirs) {
@@ -112,10 +104,18 @@ app.whenReady().then(() => {
       }
 
       const accountName = accountDir.name
-
       const accountPath = path.join(accountsPath, accountName)
-
+      const savedVariablesPath = path.join(accountPath, 'SavedVariables')
       const realmDirs = await fs.promises.readdir(accountPath, { withFileTypes: true })
+
+      const savedVariablesFolder = await fs.promises.stat(savedVariablesPath).catch(() => null)
+      const warbandyHelperData = await fs.promises
+        .readFile(path.join(savedVariablesPath, 'WarbandyHelper.lua'), 'utf8')
+        .catch(() => null)
+
+      if (!savedVariablesFolder || !savedVariablesFolder.isDirectory()) {
+        continue
+      }
 
       for (const realmDir of realmDirs) {
         if (!realmDir.isDirectory() || realmDir.name === 'SavedVariables') {
@@ -123,9 +123,7 @@ app.whenReady().then(() => {
         }
 
         const realmName = realmDir.name
-
         const realmPath = path.join(accountPath, realmName)
-
         const characterDirs = await fs.promises.readdir(realmPath, { withFileTypes: true })
 
         for (const characterDir of characterDirs) {
@@ -165,3 +163,4 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+

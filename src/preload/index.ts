@@ -1,32 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
-
-// Custom APIs for renderer
-const api = {}
-
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
-}
 
 contextBridge.exposeInMainWorld('electronAPI', {
   selectFolder: () => ipcRenderer.invoke('select-folder'),
-  folderExists: (path: string) => ipcRenderer.invoke('folder-exists', path),
-  readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
-  writeFile: (path: string, content: string) => ipcRenderer.invoke('write-file', path, content),
-  fileExists: (filePath: string) => ipcRenderer.invoke('file-exists', filePath),
-  getCharacters: (wowPath: string) => ipcRenderer.invoke('get-characters', wowPath),
-  getAppPath: () => ipcRenderer.invoke('get-app-path')
+  folderExists: (p:string)=>ipcRenderer.invoke('folder-exists',p),
+  fileExists:(p:string)=>ipcRenderer.invoke('file-exists',p),
+  readFile:(p:string)=>ipcRenderer.invoke('read-file',p),
+  writeFile:(p:string,c:string)=>ipcRenderer.invoke('write-file',p,c),
+  getCharacters:(w:string)=>ipcRenderer.invoke('get-characters',w),
+  getAppPath:()=>ipcRenderer.invoke('get-app-path')
 })
