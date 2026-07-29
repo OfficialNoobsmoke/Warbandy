@@ -1,4 +1,4 @@
-import { getAppSettings, updateAppSettings } from '@renderer/domain/appSettings'
+import { getAppSettings, updateAppSettings } from '../domain/appSettings'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 

@@ -1,5 +1,5 @@
-import { getAppSettings } from '@renderer/domain/appSettings'
-import { GameSettings } from '@renderer/domain/gameSettings'
+import { getAppSettings } from '../domain/appSettings'
+import { GameSettings } from '../domain/gameSettings'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 

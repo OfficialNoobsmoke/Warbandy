@@ -1,5 +1,5 @@
-import { getAppSettings } from '@renderer/domain/appSettings'
-import { Character } from '@renderer/domain/character'
+import { getAppSettings } from '../domain/appSettings'
+import { Character, Instance } from '../domain/character'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -23,9 +23,29 @@ export default function CharactersPage(): React.JSX.Element {
       (character) =>
         character.account.toLowerCase().includes(search) ||
         character.realm.toLowerCase().includes(search) ||
-        character.name.toLowerCase().includes(search)
+        character.name.toLowerCase().includes(search) ||
+        character.savedRaids?.some((instance) => instance.name.toLowerCase().includes(search)) ||
+        character.savedDungeons?.some((instance) => instance.name.toLowerCase().includes(search))
     )
   }, [characters, filter])
+
+  function formatSavedRaids(instances: Instance[]) {
+    return instances
+      .map(
+        (instance) =>
+          `${instance.name} (${instance.maxPlayers}) ${instance.difficulty === 2 ? 'HC' : 'NM'}`
+      )
+      .join(', ')
+  }
+
+  function formatSavedDungeons(instances: Instance[]) {
+    return instances.map((instance) => `${instance.name}`).join(', ')
+  }
+
+  function formatDate(date: Date | undefined): string {
+    if (!date) return ''
+    return date.toLocaleString()
+  }
 
   return (
     <div>
@@ -49,9 +69,10 @@ export default function CharactersPage(): React.JSX.Element {
               <th>Name</th>
               <th>Race</th>
               <th>Class</th>
-              <th>Saved Instances</th>
+              <th>Saved Raids</th>
               <th>Saved Dungeons</th>
               <th>Weekly Quest Completed</th>
+              <th>Last Updated</th>
             </tr>
           </thead>
 
@@ -63,15 +84,16 @@ export default function CharactersPage(): React.JSX.Element {
                 <td>{character.name}</td>
                 <td>{character.race}</td>
                 <td>{character.class}</td>
-                <td>{character.savedInstances}</td>
-                <td>{character.savedDungeons}</td>
-                <td>{character.weeklyQuestCompleted ? 'Yes' : 'No'}</td>
+                <td>{formatSavedRaids(character.savedRaids || [])}</td>
+                <td>{formatSavedDungeons(character.savedDungeons || [])}</td>
+                <td>{formatDate(character.weeklyQuestCompletedAt)}</td>
+                <td>{formatDate(character.lastUpdated)}</td>
               </tr>
             ))}
 
             {filteredCharacters.length === 0 && (
               <tr>
-                <td colSpan={6}>No characters found</td>
+                <td colSpan={8}>No characters found</td>
               </tr>
             )}
           </tbody>
