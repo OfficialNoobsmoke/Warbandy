@@ -1,5 +1,5 @@
+import { appSettingsStorage } from '../domain/appSettings'
 import { useNavigate } from 'react-router-dom'
-import { setAppSettings } from './domain/appSettings'
 import { useEffect } from 'react'
 
 function App(): React.JSX.Element {
@@ -22,7 +22,7 @@ function App(): React.JSX.Element {
 
       if (!content) return
 
-      setAppSettings(JSON.parse(content))
+      appSettingsStorage.set(JSON.parse(content))
     }
   }
 
@@ -37,10 +37,14 @@ function App(): React.JSX.Element {
 
   return (
     <>
+      <h1>Warbandy</h1>
       <button onClick={() => navigate('/charactersPage')}>Characters Page</button>
       <button onClick={() => navigate('/gameSettingsPage')}>Go To Game Settings Page</button>
       <button onClick={() => navigate('/applicationSettingsPage')}>
         Go To Application Settings Page
+      </button>
+      <button className="danger" onClick={() => window.electronAPI.exit()}>
+        Exit
       </button>
     </>
   )

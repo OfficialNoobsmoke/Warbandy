@@ -1,31 +1,88 @@
-import { getAppSettings } from '@renderer/domain/appSettings'
-import { Character } from '@renderer/domain/character'
-import { useEffect, useMemo, useState } from 'react'
+import { appSettingsStorage } from '../domain/appSettings'
+import { Character, Instance } from '../domain/character'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { warbandyHelperDataStorage } from '../domain/warbandyHelperData'
 
 export default function CharactersPage(): React.JSX.Element {
   const navigate = useNavigate()
   const [filter, setFilter] = useState('')
-
+  const [showExpired, setShowExpired] = useState(false)
   const [characters, setCharacters] = useState<Character[]>([])
+  const [showCharactersWithNoData, setShowCharactersWithNoData] = useState(false)
+  const loading = useRef(false)
 
   useEffect(() => {
-    const { wowPath } = getAppSettings()
-    if (!wowPath) return
+    const cached = warbandyHelperDataStorage.get()
 
-    window.electronAPI.getCharacters(wowPath).then(setCharacters)
+    if (cached?.characters?.length) {
+      setCharacters(cached.characters)
+    } else {
+      loadCharacters()
+    }
+
+    const unsubscribe = window.electronAPI.onWarbandyHelperDataChanged(() => {
+      loadCharacters()
+    })
+
+    return unsubscribe
   }, [])
 
+  async function loadCharacters() {
+    if (loading.current) return
+
+    loading.current = true
+
+    try {
+      const { wowPath } = appSettingsStorage.get()
+      if (!wowPath) return
+
+      const data = await window.electronAPI.getWarbandyHelperData(wowPath)
+
+      setCharacters(data.characters)
+      warbandyHelperDataStorage.set(data)
+    } finally {
+      loading.current = false
+    }
+  }
   const filteredCharacters = useMemo(() => {
     const search = filter.toLowerCase()
 
-    return characters.filter(
-      (character) =>
+    return characters.filter((character) => {
+      if (!showCharactersWithNoData && !character.hasData) {
+        return false
+      }
+
+      return (
         character.account.toLowerCase().includes(search) ||
         character.realm.toLowerCase().includes(search) ||
-        character.name.toLowerCase().includes(search)
-    )
-  }, [characters, filter])
+        character.name.toLowerCase().includes(search) ||
+        character.savedRaids?.some((instance) => instance.name.toLowerCase().includes(search)) ||
+        character.savedDungeons?.some((instance) => instance.name.toLowerCase().includes(search))
+      )
+    })
+  }, [characters, filter, showCharactersWithNoData])
+
+  function formatSavedRaids(instances: Instance[]) {
+    return instances
+      .filter((instance) => showExpired || instance.isLocked)
+      .map((instance) => {
+        return `${!instance.isLocked ? '(X)' : ''}${instance.name} (${instance.maxPlayers}) ${instance.difficulty === 2 ? 'HC' : 'NM'}${instance.extended ? ' Extended' : ''}`
+      })
+      .join(', ')
+  }
+
+  function formatSavedDungeons(instances: Instance[]) {
+    return instances
+      .filter((instance) => showExpired || instance.isLocked)
+      .map((instance) => `${!instance.isLocked ? '(X)' : ''}${instance.name}`)
+      .join(', ')
+  }
+
+  function formatDate(date: Date | undefined): string {
+    if (!date) return ''
+    return date.toLocaleString()
+  }
 
   return (
     <div>
@@ -39,6 +96,22 @@ export default function CharactersPage(): React.JSX.Element {
           onChange={(e) => setFilter(e.target.value)}
         />
         <button onClick={() => navigate('/')}>Back</button>
+        <label>
+          <input
+            type="checkbox"
+            checked={showExpired}
+            onChange={(e) => setShowExpired(e.target.checked)}
+          />
+          Show expired
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={showCharactersWithNoData}
+            onChange={(e) => setShowCharactersWithNoData(e.target.checked)}
+          />
+          Show characters with no data
+        </label>
       </div>
       <div className="table-container">
         <table className="characters-table">
@@ -49,9 +122,10 @@ export default function CharactersPage(): React.JSX.Element {
               <th>Name</th>
               <th>Race</th>
               <th>Class</th>
-              <th>Saved Instances</th>
+              <th>Saved Raids</th>
               <th>Saved Dungeons</th>
               <th>Weekly Quest Completed</th>
+              <th>Last Updated</th>
             </tr>
           </thead>
 
@@ -63,15 +137,16 @@ export default function CharactersPage(): React.JSX.Element {
                 <td>{character.name}</td>
                 <td>{character.race}</td>
                 <td>{character.class}</td>
-                <td>{character.savedInstances}</td>
-                <td>{character.savedDungeons}</td>
-                <td>{character.weeklyQuestCompleted ? 'Yes' : 'No'}</td>
+                <td>{formatSavedRaids(character.savedRaids || [])}</td>
+                <td>{formatSavedDungeons(character.savedDungeons || [])}</td>
+                <td>{character.isWeeklyQuestCompleted ? 'Yes' : 'No'}</td>
+                <td>{formatDate(character.lastUpdatedAt)}</td>
               </tr>
             ))}
 
             {filteredCharacters.length === 0 && (
               <tr>
-                <td colSpan={6}>No characters found</td>
+                <td colSpan={8}>No characters found</td>
               </tr>
             )}
           </tbody>

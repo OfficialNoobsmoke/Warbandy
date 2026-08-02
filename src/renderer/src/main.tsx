@@ -1,8 +1,8 @@
-import './assets/main.css'
+import './assets/base.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App'
+import App from './pages/App'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import ApplicationSettingsPage from './pages/ApplicationSettingsPage'
 import GameSettingsPage from './pages/GameSettingsPage'

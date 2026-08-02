@@ -1,11 +1,11 @@
-import { getAppSettings, updateAppSettings } from '@renderer/domain/appSettings'
+import { appSettingsStorage } from '../domain/appSettings'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function ApplicationSettingsPage(): React.JSX.Element {
   const navigate = useNavigate()
   const [WowFolderPath, setWowFolderPath] = useState(() => {
-    const { wowPath = '' } = getAppSettings()
+    const { wowPath = '' } = appSettingsStorage.get()
     return wowPath
   })
 
@@ -24,14 +24,14 @@ export default function ApplicationSettingsPage(): React.JSX.Element {
         return
       }
 
-      updateAppSettings({ wowPath: path })
+      appSettingsStorage.set({ wowPath: path })
       setWowFolderPath(path)
     }
   }
 
   const saveApplicationSettings = (): void => {
     const appPath = localStorage.getItem('appPath')
-    const appSettings = getAppSettings()
+    const appSettings = appSettingsStorage.get()
     window.electronAPI.writeFile(appPath + '/settings.json', JSON.stringify(appSettings))
   }
 

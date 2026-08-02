@@ -8,8 +8,10 @@ declare global {
       readFile(filePath: string): Promise<string | null>
       writeFile(path: string, content: string): Promise<void>
       fileExists: (filePath: string) => Promise<boolean>
-      getCharacters: (wowPath: string) => Promise<Character[]>
+      getWarbandyHelperData: (wowPath: string) => Promise<WarbandyHelperData>
+      onWarbandyHelperDataChanged: (callback: () => void) => () => void
       getAppPath: () => Promise<string>
+      exit: () => void
     }
   }
 }

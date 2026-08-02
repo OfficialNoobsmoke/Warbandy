@@ -7,6 +7,7 @@ export type Character = {
   class?: string
   weeklyQuestCompletedAt?: Date
   isWeeklyQuestCompleted?: boolean
+  lastUpdated?: number
   lastUpdatedAt?: Date
   savedRaids?: Instance[]
   savedDungeons?: Instance[]
@@ -19,11 +20,18 @@ export type Instance = {
   maxPlayers: number
   locked: boolean
   extended: boolean
-  isLocked?: boolean
+  isRaid: boolean
+  isLocked: boolean
+  reset: number
 }
 
 export type Realm = {
   name: string
   dailyReset?: Date
   weeklyReset?: Date
+}
+
+export type WarbandyHelperData = {
+  characters: Character[]
+  realms: Realm[]
 }

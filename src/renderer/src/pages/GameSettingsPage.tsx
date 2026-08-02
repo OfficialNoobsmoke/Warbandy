@@ -1,5 +1,5 @@
-import { getAppSettings } from '@renderer/domain/appSettings'
-import { GameSettings } from '@renderer/domain/gameSettings'
+import { appSettingsStorage } from '../domain/appSettings'
+import { GameSettings } from '../domain/gameSettings'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -29,7 +29,7 @@ export default function GameSettingsPage(): React.JSX.Element {
   function saveSettings(): void {
     if (!settings || !settingsFileContent) return
 
-    const { wowPath } = getAppSettings()
+    const { wowPath } = appSettingsStorage.get()
     if (!wowPath) return
 
     let content = settingsFileContent
@@ -46,7 +46,7 @@ export default function GameSettingsPage(): React.JSX.Element {
 
   useEffect(() => {
     const loadSettings = async (): Promise<void> => {
-      const { wowPath = '' } = getAppSettings()
+      const { wowPath = '' } = appSettingsStorage.get()
       if (!wowPath) return
 
       const content = await window.electronAPI.readFile(wowPath + '/WTF/Config.wtf')
