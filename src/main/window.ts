@@ -18,6 +18,8 @@ export function createWindow(): void {
     }
   })
 
+  mainWindow.removeMenu()
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize()
     mainWindow.show()
