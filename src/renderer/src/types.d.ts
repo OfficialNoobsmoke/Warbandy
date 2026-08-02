@@ -9,7 +9,9 @@ declare global {
       writeFile(path: string, content: string): Promise<void>
       fileExists: (filePath: string) => Promise<boolean>
       getWarbandyHelperData: (wowPath: string) => Promise<WarbandyHelperData>
+      onWarbandyHelperDataChanged: (callback: () => void) => () => void
       getAppPath: () => Promise<string>
+      exit: () => void
     }
   }
 }

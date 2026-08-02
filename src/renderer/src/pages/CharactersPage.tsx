@@ -1,6 +1,6 @@
 import { appSettingsStorage } from '../domain/appSettings'
 import { Character, Instance } from '../domain/character'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { warbandyHelperDataStorage } from '../domain/warbandyHelperData'
 
@@ -9,37 +9,59 @@ export default function CharactersPage(): React.JSX.Element {
   const [filter, setFilter] = useState('')
   const [showExpired, setShowExpired] = useState(false)
   const [characters, setCharacters] = useState<Character[]>([])
+  const [showCharactersWithNoData, setShowCharactersWithNoData] = useState(false)
+  const loading = useRef(false)
 
   useEffect(() => {
-    const { wowPath } = appSettingsStorage.get()
-    if (!wowPath) return
+    const cached = warbandyHelperDataStorage.get()
 
-    const warbandyHelperData = warbandyHelperDataStorage.get()
-    if (
-      warbandyHelperData &&
-      warbandyHelperData.characters &&
-      warbandyHelperData.characters.length > 0
-    )
-      return setCharacters(warbandyHelperData.characters)
+    if (cached?.characters?.length) {
+      setCharacters(cached.characters)
+    } else {
+      loadCharacters()
+    }
 
-    window.electronAPI.getWarbandyHelperData(wowPath).then((data) => {
-      setCharacters(data.characters)
-      warbandyHelperDataStorage.set(data)
+    const unsubscribe = window.electronAPI.onWarbandyHelperDataChanged(() => {
+      loadCharacters()
     })
+
+    return unsubscribe
   }, [])
 
+  async function loadCharacters() {
+    if (loading.current) return
+
+    loading.current = true
+
+    try {
+      const { wowPath } = appSettingsStorage.get()
+      if (!wowPath) return
+
+      const data = await window.electronAPI.getWarbandyHelperData(wowPath)
+
+      setCharacters(data.characters)
+      warbandyHelperDataStorage.set(data)
+    } finally {
+      loading.current = false
+    }
+  }
   const filteredCharacters = useMemo(() => {
     const search = filter.toLowerCase()
 
-    return characters.filter(
-      (character) =>
+    return characters.filter((character) => {
+      if (!showCharactersWithNoData && !character.hasData) {
+        return false
+      }
+
+      return (
         character.account.toLowerCase().includes(search) ||
         character.realm.toLowerCase().includes(search) ||
         character.name.toLowerCase().includes(search) ||
         character.savedRaids?.some((instance) => instance.name.toLowerCase().includes(search)) ||
         character.savedDungeons?.some((instance) => instance.name.toLowerCase().includes(search))
-    )
-  }, [characters, filter])
+      )
+    })
+  }, [characters, filter, showCharactersWithNoData])
 
   function formatSavedRaids(instances: Instance[]) {
     return instances
@@ -81,6 +103,14 @@ export default function CharactersPage(): React.JSX.Element {
             onChange={(e) => setShowExpired(e.target.checked)}
           />
           Show expired
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={showCharactersWithNoData}
+            onChange={(e) => setShowCharactersWithNoData(e.target.checked)}
+          />
+          Show characters with no data
         </label>
       </div>
       <div className="table-container">

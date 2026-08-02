@@ -19,7 +19,8 @@ function mapDbCharacterToCharacter(dbCharacter: DbCharacter, account: string): C
     ),
     savedDungeons: (dbCharacter.savedInstances?.filter((instance) => !instance?.isRaid) || []).map(
       mapDbSavedInstanceToInstance
-    )
+    ),
+    hasData: true
   }
 }
 

@@ -22,4 +22,6 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('get-warbandy-helper-data', (_, wowPath) => getWarbandyHelperData(wowPath))
 
   ipcMain.handle('get-app-path', () => app.getAppPath())
+
+  ipcMain.handle('exit', () => app.exit())
 }

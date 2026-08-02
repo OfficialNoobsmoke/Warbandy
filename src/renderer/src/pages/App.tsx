@@ -37,10 +37,14 @@ function App(): React.JSX.Element {
 
   return (
     <>
+      <h1>Warbandy</h1>
       <button onClick={() => navigate('/charactersPage')}>Characters Page</button>
       <button onClick={() => navigate('/gameSettingsPage')}>Go To Game Settings Page</button>
       <button onClick={() => navigate('/applicationSettingsPage')}>
         Go To Application Settings Page
+      </button>
+      <button className="danger" onClick={() => window.electronAPI.exit()}>
+        Exit
       </button>
     </>
   )

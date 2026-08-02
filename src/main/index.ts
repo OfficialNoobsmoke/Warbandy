@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { createWindow } from './window'
 import { registerIpcHandlers } from './ipc'
+import { watchWarbandyHelperDataFileChanges } from './services/fileWatcher'
 
 app.whenReady().then(() => {
   app.setAppUserModelId('com.electron')
@@ -14,6 +15,10 @@ app.whenReady().then(() => {
       createWindow()
     }
   })
+
+  watchWarbandyHelperDataFileChanges().catch((error) => {
+    console.error('Error watching Warbandy Helper data file changes:', error)
+  })
 })
 
 app.on('window-all-closed', () => {
@@ -21,4 +26,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-

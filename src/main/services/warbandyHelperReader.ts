@@ -180,6 +180,7 @@ function buildCharacter(
   return {
     account,
     realm,
-    name
+    name,
+    hasData: false
   }
 }

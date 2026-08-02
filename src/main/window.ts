@@ -1,11 +1,14 @@
-import { BrowserWindow, app, shell } from 'electron'
+import { BrowserWindow, app, shell, screen } from 'electron'
 import { join } from 'path'
 import icon from '../../resources/icon.png?asset'
 
+let mainWindow: BrowserWindow
+
 export function createWindow(): void {
-  const window = new BrowserWindow({
-    width: 900,
-    height: 670,
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+  mainWindow = new BrowserWindow({
+    width,
+    height,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -15,22 +18,29 @@ export function createWindow(): void {
     }
   })
 
-  window.once('ready-to-show', () => window.show())
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.maximize()
+    mainWindow.show()
+  })
 
-  window.webContents.setWindowOpenHandler(({ url }) => {
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }
   })
 
   if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) {
-    window.loadURL(process.env.ELECTRON_RENDERER_URL)
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   } else {
-    window.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
-  window.webContents.once('did-finish-load', () => {
+  mainWindow.webContents.once('did-finish-load', () => {
     if (!app.isPackaged) {
-      window.webContents.openDevTools({ mode: 'detach' })
+      mainWindow.webContents.openDevTools({ mode: 'detach' })
     }
   })
+}
+
+export function getMainWindow(): BrowserWindow {
+  return mainWindow
 }

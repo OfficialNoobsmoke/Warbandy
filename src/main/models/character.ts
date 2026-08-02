@@ -2,6 +2,7 @@ export type Character = {
   account: string
   realm: string
   name: string
+  hasData: boolean
   race?: string
   class?: string
   weeklyQuestCompletedAt?: Date
