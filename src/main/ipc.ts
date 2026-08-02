@@ -1,6 +1,6 @@
 import { ipcMain, dialog, app } from 'electron'
 import * as fileService from './services/fileService'
-import { getCharacters } from './services/characterService'
+import { getWarbandyHelperData } from './services/warbandyHelperReader'
 
 export function registerIpcHandlers(): void {
   ipcMain.handle('select-folder', async () => {
@@ -19,7 +19,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('write-file', (_, path, content) => fileService.writeFile(path, content))
 
-  ipcMain.handle('get-characters', (_, wowPath) => getCharacters(wowPath))
+  ipcMain.handle('get-warbandy-helper-data', (_, wowPath) => getWarbandyHelperData(wowPath))
 
   ipcMain.handle('get-app-path', () => app.getAppPath())
 }

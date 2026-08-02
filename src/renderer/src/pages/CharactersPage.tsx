@@ -1,19 +1,31 @@
-import { getAppSettings } from '../domain/appSettings'
+import { appSettingsStorage } from '../domain/appSettings'
 import { Character, Instance } from '../domain/character'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { warbandyHelperDataStorage } from '../domain/warbandyHelperData'
 
 export default function CharactersPage(): React.JSX.Element {
   const navigate = useNavigate()
   const [filter, setFilter] = useState('')
-
+  const [showExpired, setShowExpired] = useState(false)
   const [characters, setCharacters] = useState<Character[]>([])
 
   useEffect(() => {
-    const { wowPath } = getAppSettings()
+    const { wowPath } = appSettingsStorage.get()
     if (!wowPath) return
 
-    window.electronAPI.getCharacters(wowPath).then(setCharacters)
+    const warbandyHelperData = warbandyHelperDataStorage.get()
+    if (
+      warbandyHelperData &&
+      warbandyHelperData.characters &&
+      warbandyHelperData.characters.length > 0
+    )
+      return setCharacters(warbandyHelperData.characters)
+
+    window.electronAPI.getWarbandyHelperData(wowPath).then((data) => {
+      setCharacters(data.characters)
+      warbandyHelperDataStorage.set(data)
+    })
   }, [])
 
   const filteredCharacters = useMemo(() => {
@@ -31,15 +43,18 @@ export default function CharactersPage(): React.JSX.Element {
 
   function formatSavedRaids(instances: Instance[]) {
     return instances
-      .map(
-        (instance) =>
-          `${instance.name} (${instance.maxPlayers}) ${instance.difficulty === 2 ? 'HC' : 'NM'}`
-      )
+      .filter((instance) => showExpired || instance.isLocked)
+      .map((instance) => {
+        return `${!instance.isLocked ? '(X)' : ''}${instance.name} (${instance.maxPlayers}) ${instance.difficulty === 2 ? 'HC' : 'NM'}${instance.extended ? ' Extended' : ''}`
+      })
       .join(', ')
   }
 
   function formatSavedDungeons(instances: Instance[]) {
-    return instances.map((instance) => `${instance.name}`).join(', ')
+    return instances
+      .filter((instance) => showExpired || instance.isLocked)
+      .map((instance) => `${!instance.isLocked ? '(X)' : ''}${instance.name}`)
+      .join(', ')
   }
 
   function formatDate(date: Date | undefined): string {
@@ -59,6 +74,14 @@ export default function CharactersPage(): React.JSX.Element {
           onChange={(e) => setFilter(e.target.value)}
         />
         <button onClick={() => navigate('/')}>Back</button>
+        <label>
+          <input
+            type="checkbox"
+            checked={showExpired}
+            onChange={(e) => setShowExpired(e.target.checked)}
+          />
+          Show expired
+        </label>
       </div>
       <div className="table-container">
         <table className="characters-table">
@@ -86,8 +109,8 @@ export default function CharactersPage(): React.JSX.Element {
                 <td>{character.class}</td>
                 <td>{formatSavedRaids(character.savedRaids || [])}</td>
                 <td>{formatSavedDungeons(character.savedDungeons || [])}</td>
-                <td>{formatDate(character.weeklyQuestCompletedAt)}</td>
-                <td>{formatDate(character.lastUpdated)}</td>
+                <td>{character.isWeeklyQuestCompleted ? 'Yes' : 'No'}</td>
+                <td>{formatDate(character.lastUpdatedAt)}</td>
               </tr>
             ))}
 

@@ -1,11 +1,10 @@
 export type DbCharacter = {
   realm: string
   name: string
-  race?: string
-  class?: string
-  weeklyCompleted?: boolean
+  race: string
+  class: string
   weeklyQuestCompletedAt?: number
-  lastUpdated?: number
+  lastUpdated: number
   savedInstances?: DbSavedInstance[]
 }
 
@@ -17,4 +16,11 @@ export type DbSavedInstance = {
   locked: boolean
   extended: boolean
   isRaid: boolean
+  reset: number
+}
+
+export type DbRealm = {
+  name: string
+  dailyReset?: number
+  weeklyReset?: number
 }

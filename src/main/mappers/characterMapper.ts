@@ -9,11 +9,11 @@ function mapDbCharacterToCharacter(dbCharacter: DbCharacter, account: string): C
     name: dbCharacter.name,
     race: dbCharacter.race,
     class: dbCharacter.class,
-    weeklyCompleted: dbCharacter.weeklyCompleted,
     weeklyQuestCompletedAt: dbCharacter.weeklyQuestCompletedAt
       ? unixToDate(dbCharacter.weeklyQuestCompletedAt)
       : undefined,
-    lastUpdated: dbCharacter.lastUpdated ? unixToDate(dbCharacter.lastUpdated) : undefined,
+    lastUpdated: dbCharacter.lastUpdated,
+    lastUpdatedAt: unixToDate(dbCharacter.lastUpdated),
     savedRaids: (dbCharacter.savedInstances?.filter((instance) => instance?.isRaid) || []).map(
       mapDbSavedInstanceToInstance
     ),
@@ -30,7 +30,10 @@ function mapDbSavedInstanceToInstance(dbSavedInstance: DbSavedInstance): Instanc
     difficulty: dbSavedInstance.difficulty,
     maxPlayers: dbSavedInstance.maxPlayers,
     locked: dbSavedInstance.locked,
-    extended: dbSavedInstance.extended
+    extended: dbSavedInstance.extended,
+    isRaid: dbSavedInstance.isRaid,
+    isLocked: true, // value, will be updated later
+    reset: dbSavedInstance.reset
   }
 }
 

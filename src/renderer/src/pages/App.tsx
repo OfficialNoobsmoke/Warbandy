@@ -1,5 +1,5 @@
+import { appSettingsStorage } from '../domain/appSettings'
 import { useNavigate } from 'react-router-dom'
-import { setAppSettings } from './domain/appSettings'
 import { useEffect } from 'react'
 
 function App(): React.JSX.Element {
@@ -22,7 +22,7 @@ function App(): React.JSX.Element {
 
       if (!content) return
 
-      setAppSettings(JSON.parse(content))
+      appSettingsStorage.set(JSON.parse(content))
     }
   }
 
