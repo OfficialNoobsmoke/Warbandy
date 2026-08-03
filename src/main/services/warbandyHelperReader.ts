@@ -6,7 +6,7 @@ import { parseCharacters, parseRealms } from '../helpers/warbandyHelperDataParse
 import mapDbCharacterToCharacter from '../mappers/characterMapper'
 import { Character, Realm, WarbandyHelperData } from '../models/character'
 import { unixToDate } from '../helpers/time'
-import { getNextWeeklyReset } from '../helpers/resetHelper'
+import { getNextDailyReset, getNextWeeklyReset } from '../helpers/resetHelper'
 
 export async function getWarbandyHelperData(wowPath: string): Promise<WarbandyHelperData> {
   const characters: Character[] = []
@@ -72,19 +72,35 @@ function updateDataAfterRead({ characters, realms }: WarbandyHelperData): void {
 
   for (const character of characters) {
     const realm = realmMap.get(character.realm)
-    if (!realm || (!realm.dailyReset && !realm.weeklyReset) || !character.lastUpdated) {
+    if (!realm || (!realm.dailyReset && !realm.weeklyReset) || !character.hasData) {
       continue
     }
 
     if (character.weeklyQuestCompletedAt && realm.weeklyReset) {
+      if (character.name === 'Potatolife') {
+        console.log(
+          'Next weekly reset for Potatolife: ',
+          getNextWeeklyReset(realm.weeklyReset, character.weeklyQuestCompletedAt).getTime()
+        )
+      }
       character.isWeeklyQuestCompleted =
         getNextWeeklyReset(realm.weeklyReset, character.weeklyQuestCompletedAt).getTime() >
         Date.now()
     }
 
-    for (const instance of [...(character.savedRaids || []), ...(character.savedDungeons || [])]) {
-      instance.isLocked =
-        instance.locked === false ? false : character.lastUpdated + instance.reset > Date.now()
+    if (character.dailyHeroicCompletedAt && realm.dailyReset) {
+      character.isDailyHeroicCompleted =
+        getNextDailyReset(realm.dailyReset, character.dailyHeroicCompletedAt).getTime() > Date.now()
+    }
+
+    if (character.lastUpdated) {
+      for (const instance of [
+        ...(character.savedRaids || []),
+        ...(character.savedDungeons || [])
+      ]) {
+        instance.isLocked =
+          instance.locked === false ? false : character.lastUpdated + instance.reset < Date.now()
+      }
     }
   }
 }

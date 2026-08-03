@@ -1,9 +1,12 @@
 export type DbCharacter = {
   realm: string
   name: string
+  level: number
+  faction: string
   race: string
   class: string
   weeklyQuestCompletedAt?: number
+  dailyHeroicCompletedAt?: number
   lastUpdated: number
   savedInstances?: DbSavedInstance[]
 }

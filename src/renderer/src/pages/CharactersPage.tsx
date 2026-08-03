@@ -79,9 +79,17 @@ export default function CharactersPage(): React.JSX.Element {
       .join(', ')
   }
 
+  function formatWeeklyQuestCompleted(
+    isWeeklyQuestCompleted: boolean | undefined,
+    characterHasData: boolean
+  ): string {
+    if (isWeeklyQuestCompleted === undefined && !characterHasData) return ''
+    return isWeeklyQuestCompleted ? 'Yes' : 'No'
+  }
+
   function formatDate(date: Date | undefined): string {
     if (!date) return ''
-    return date.toLocaleString()
+    return new Date(date).toLocaleString()
   }
 
   return (
@@ -120,10 +128,13 @@ export default function CharactersPage(): React.JSX.Element {
               <th>Account</th>
               <th>Realm</th>
               <th>Name</th>
+              <th>Level</th>
+              <th>Faction</th>
               <th>Race</th>
               <th>Class</th>
               <th>Saved Raids</th>
               <th>Saved Dungeons</th>
+              <th>Daily Heroic RDF Completed</th>
               <th>Weekly Quest Completed</th>
               <th>Last Updated</th>
             </tr>
@@ -135,11 +146,18 @@ export default function CharactersPage(): React.JSX.Element {
                 <td>{character.account}</td>
                 <td>{character.realm}</td>
                 <td>{character.name}</td>
+                <td>{character.level}</td>
+                <td>{character.faction}</td>
                 <td>{character.race}</td>
                 <td>{character.class}</td>
                 <td>{formatSavedRaids(character.savedRaids || [])}</td>
                 <td>{formatSavedDungeons(character.savedDungeons || [])}</td>
-                <td>{character.isWeeklyQuestCompleted ? 'Yes' : 'No'}</td>
+                <td>
+                  {formatWeeklyQuestCompleted(character.isDailyHeroicCompleted, character.hasData)}
+                </td>
+                <td>
+                  {formatWeeklyQuestCompleted(character.isWeeklyQuestCompleted, character.hasData)}
+                </td>
                 <td>{formatDate(character.lastUpdatedAt)}</td>
               </tr>
             ))}

@@ -1,8 +1,37 @@
 export function getNextWeeklyReset(realmWeeklyReset: Date, startingDate: Date): Date {
-  const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+  const result = new Date(startingDate)
 
-  const diff = startingDate.getTime() - realmWeeklyReset.getTime()
-  const weeks = Math.max(0, Math.floor(diff / WEEK_MS) + 1)
+  result.setHours(
+    realmWeeklyReset.getHours(),
+    realmWeeklyReset.getMinutes(),
+    realmWeeklyReset.getSeconds(),
+    realmWeeklyReset.getMilliseconds()
+  )
 
-  return new Date(realmWeeklyReset.getTime() + weeks * WEEK_MS)
+  const daysUntilReset = (realmWeeklyReset.getDay() - startingDate.getDay() + 7) % 7
+
+  result.setDate(result.getDate() + daysUntilReset)
+
+  if (result <= startingDate) {
+    result.setDate(result.getDate() + 7)
+  }
+
+  return result
+}
+
+export function getNextDailyReset(realmDailyReset: Date, startingDate: Date): Date {
+  const result = new Date(startingDate)
+
+  result.setHours(
+    realmDailyReset.getHours(),
+    realmDailyReset.getMinutes(),
+    realmDailyReset.getSeconds(),
+    realmDailyReset.getMilliseconds()
+  )
+
+  if (result <= startingDate) {
+    result.setDate(result.getDate() + 1)
+  }
+
+  return result
 }

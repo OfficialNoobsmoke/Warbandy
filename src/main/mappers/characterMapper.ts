@@ -9,9 +9,16 @@ function mapDbCharacterToCharacter(dbCharacter: DbCharacter, account: string): C
     name: dbCharacter.name,
     race: dbCharacter.race,
     class: dbCharacter.class,
+    level: dbCharacter.level,
+    faction: dbCharacter.faction,
     weeklyQuestCompletedAt: dbCharacter.weeklyQuestCompletedAt
       ? unixToDate(dbCharacter.weeklyQuestCompletedAt)
       : undefined,
+    dailyHeroicCompletedAt: dbCharacter.dailyHeroicCompletedAt
+      ? unixToDate(dbCharacter.dailyHeroicCompletedAt)
+      : undefined,
+    isWeeklyQuestCompleted: undefined,
+    isDailyHeroicCompleted: undefined,
     lastUpdated: dbCharacter.lastUpdated,
     lastUpdatedAt: unixToDate(dbCharacter.lastUpdated),
     savedRaids: (dbCharacter.savedInstances?.filter((instance) => instance?.isRaid) || []).map(

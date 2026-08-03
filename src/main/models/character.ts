@@ -3,10 +3,14 @@ export type Character = {
   realm: string
   name: string
   hasData: boolean
+  level?: number
+  faction?: string
   race?: string
   class?: string
   weeklyQuestCompletedAt?: Date
   isWeeklyQuestCompleted?: boolean
+  dailyHeroicCompletedAt?: Date
+  isDailyHeroicCompleted?: boolean
   lastUpdated?: number
   lastUpdatedAt?: Date
   savedRaids?: Instance[]
