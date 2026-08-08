@@ -77,12 +77,6 @@ function updateDataAfterRead({ characters, realms }: WarbandyHelperData): void {
     }
 
     if (character.weeklyQuestCompletedAt && realm.weeklyReset) {
-      if (character.name === 'Potatolife') {
-        console.log(
-          'Next weekly reset for Potatolife: ',
-          getNextWeeklyReset(realm.weeklyReset, character.weeklyQuestCompletedAt).getTime()
-        )
-      }
       character.isWeeklyQuestCompleted =
         getNextWeeklyReset(realm.weeklyReset, character.weeklyQuestCompletedAt).getTime() >
         Date.now()
@@ -99,7 +93,9 @@ function updateDataAfterRead({ characters, realms }: WarbandyHelperData): void {
         ...(character.savedDungeons || [])
       ]) {
         instance.isLocked =
-          instance.locked === false ? false : character.lastUpdated + instance.reset < Date.now()
+          instance.locked === false
+            ? false
+            : (character.lastUpdated + instance.reset) * 1000 > Date.now()
       }
     }
   }
